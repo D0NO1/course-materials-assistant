@@ -21,6 +21,13 @@ class TranslationSupportTests(unittest.TestCase):
         self.assertIn("规划", chinese)
         self.assertIn("维护", chinese)
 
+    def test_long_source_becomes_concise_chinese_support_without_full_english_copy(self):
+        english = "Course objectives explain the SDLC, scope, requirements, data-flow diagrams, entity-relationship diagrams, use cases, design, testing, and maintenance. " * 4
+        chinese = translate_text(english)
+        self.assertIn("学习目标", chinese)
+        self.assertLess(len(chinese), 180)
+        self.assertNotIn("Course objectives explain the SDLC", chinese)
+
 
 if __name__ == "__main__":
     unittest.main()
