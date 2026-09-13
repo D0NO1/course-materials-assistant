@@ -51,6 +51,7 @@ class LearningSessionTests(unittest.TestCase):
                 self.assertTrue(result["sections"])
                 self.assertIn("sources", result)
                 self.assertTrue(any(item.get("en") and item.get("zh") for section in result["sections"] for item in section["items"]))
+                self.assertTrue(any(any("\u4e00" <= char <= "\u9fff" for char in item.get("zh", "")) and item.get("zh") != item.get("en") for section in result["sections"] for item in section["items"]))
 
     def test_preserves_locators_warnings_and_assignment_confidence(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -74,6 +75,16 @@ class LearningSessionTests(unittest.TestCase):
             text = json.dumps(result, ensure_ascii=False).casefold()
             self.assertNotIn("guaranteed exam question", text)
             self.assertIn("not known", text)
+
+    def test_known_course_gets_concise_real_bilingual_core_summary(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            course = Path(temp_dir) / "MIS-413-91 - Systems Analysis"
+            course.mkdir()
+            result = generate_learning_session(course, MATERIALS, "exam")
+            serialized = json.dumps(result, ensure_ascii=False)
+            self.assertIn("项目范围", serialized)
+            self.assertIn("系统开发生命周期", serialized)
+            self.assertIn("Course Core", serialized)
 
 
 if __name__ == "__main__":
