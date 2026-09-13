@@ -1,0 +1,32 @@
+# Private course material and generated course state
+.course-assistant/
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.xlsm
+*.ppt
+*.pptx
+*.accdb
+*.mdb
+
+# Local work and Python caches
+work/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+env/
+
+# Local editor and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Render intermediates
+rendered-reports/
+lo-profile*/

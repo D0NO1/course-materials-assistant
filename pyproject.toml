@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "course-materials-assistant"
+version = "0.1.0"
+description = "Portable course-material indexing and bilingual report helpers for a Codex skill"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = [
+  "python-docx>=1.1,<2",
+  "pypdf>=5,<7",
+  "python-pptx>=1.0,<2",
+  "openpyxl>=3.1,<4",
+]
+
+[tool.setuptools]
+py-modules = []

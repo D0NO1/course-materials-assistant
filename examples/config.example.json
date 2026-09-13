@@ -1,0 +1,7 @@
+{
+  "language": "bilingual",
+  "generate_docx": true,
+  "render_docx": true,
+  "preserve_source_files": true,
+  "exam_mode": "cumulative"
+}
