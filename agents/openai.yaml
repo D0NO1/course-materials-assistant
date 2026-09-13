@@ -1,0 +1,4 @@
+interface:
+  display_name: Course Materials Assistant
+  short_description: Scan and understand mixed course materials
+  default_prompt: Analyze the selected course directory. Scan its files, update the course index, and explain the most relevant material in bilingual English-Chinese notes with source references.
