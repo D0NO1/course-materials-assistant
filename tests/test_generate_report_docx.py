@@ -87,6 +87,20 @@ class GenerateReportDocxTests(unittest.TestCase):
             from docx import Document
             text = "\n".join(paragraph.text for paragraph in Document(output).paragraphs)
             self.assertLess(text.index("中文总结"), text.index("English summary"))
+
+    def test_generate_report_removes_xml_invalid_control_characters(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            course = Path(temp_dir) / "course"
+            course.mkdir()
+            report = {
+                "title": "Control test",
+                "course": "course",
+                "summary": "Before\x0bAfter",
+                "sections": [],
+            }
+            output = generate_report(course, report)
+            from docx import Document
+            self.assertEqual(Document(output).paragraphs[3].text, "BeforeAfter")
             self.assertEqual(output.suffix, ".docx")
             self.assertTrue(output.parent.name == "reports")
             self.assertGreater(output.stat().st_size, 0)

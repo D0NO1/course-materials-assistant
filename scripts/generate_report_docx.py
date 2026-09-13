@@ -22,6 +22,11 @@ def _safe_name(value: str) -> str:
     return re.sub(r"\s+", "-", value) or "course-analysis"
 
 
+def _xml_safe(value: str) -> str:
+    """Remove characters forbidden by XML 1.0 while preserving normal whitespace."""
+    return "".join(char for char in value if char in "\t\n\r" or ord(char) >= 32)
+
+
 def _bilingual(value: object, mode: str = "en-zh") -> tuple[str, str | None]:
     if isinstance(value, dict):
         en = str(value.get("en", ""))
@@ -34,9 +39,9 @@ def _bilingual(value: object, mode: str = "en-zh") -> tuple[str, str | None]:
 def _add_bilingual_paragraph(document: Document, value: object, mode: str = "en-zh", style: str | None = None):
     en, zh = _bilingual(value, mode)
     paragraph = document.add_paragraph(style=style)
-    paragraph.add_run(en)
+    paragraph.add_run(_xml_safe(en))
     if zh:
-        paragraph.add_run("\n" + zh)
+        paragraph.add_run("\n" + _xml_safe(zh))
     return paragraph
 
 
