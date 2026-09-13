@@ -7,6 +7,27 @@ metadata:
 
 # Course Materials Assistant
 
+This skill is designed for students in Chinese-foreign cooperative programs, international students, and mixed-language classes who need help understanding English-medium professional courses.
+
+## Student learning modes
+
+Use `learn <course> --mode <mode>` for:
+
+- `preview`: pre-class goals, prerequisites, questions, and reading priority.
+- `understand`: plain-English explanation, Chinese support, relationships, and examples.
+- `review`: bilingual key points, self-test, and next review actions.
+- `assignment`: deliverables, requirements, dates, conflicts, and submission checklist.
+- `exam`: cumulative Final Exam focus, ranked topics, comparisons, processes, and study plan.
+
+Language output can be configured as `en-zh`, `zh-en`, `english-only`, `chinese-support`, or `plain-english`. The default is `en-zh`: English first and Chinese immediately below. Audience values are `cooperative-program-student`, `international-student`, and `mixed-class`.
+
+Example:
+
+```powershell
+python scripts/cli.py learn "D:\Courses\MIS-413" --mode preview
+python scripts/cli.py learn "D:\Courses\MIS-413" --mode exam --config config.json
+```
+
 Use this skill when the user asks to understand, summarize, organize, compare, or check academic materials in a user-selected course directory. Do not require a particular drive, directory, or operating system.
 
 ## Default workflow

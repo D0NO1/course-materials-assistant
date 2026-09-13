@@ -1,5 +1,7 @@
 {
   "language": "bilingual",
+  "language_mode": "en-zh",
+  "audience": "cooperative-program-student",
   "generate_docx": true,
   "render_docx": true,
   "preserve_source_files": true,

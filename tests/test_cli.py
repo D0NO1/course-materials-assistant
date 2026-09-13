@@ -30,6 +30,15 @@ class CliTests(unittest.TestCase):
 
         self.assertNotEqual(exit_code, 0)
 
+    def test_learn_writes_session_without_docx_when_requested(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            course = Path(temp_dir) / "course"
+            course.mkdir()
+            (course / "lecture.txt").write_text("lecture", encoding="utf-8")
+            exit_code = main(["learn", str(course), "--mode", "preview", "--no-docx"])
+            self.assertEqual(exit_code, 0)
+            self.assertTrue((course / ".course-assistant" / "learning-session-preview.json").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

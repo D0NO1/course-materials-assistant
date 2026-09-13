@@ -10,7 +10,9 @@ from pathlib import Path
 from extract_material import extract_many, extract_material, write_json
 from generate_assignment_tracker import generate_assignment_tracker
 from generate_exam_review import generate_exam_review
+from generate_learning_session import SUPPORTED_MODES, generate_learning_session, write_learning_session
 from index_course import SUPPORTED, build_index
+from learning_config import load_config
 
 
 def _course_files(root: Path) -> list[Path]:
@@ -45,6 +47,12 @@ def main(argv: list[str] | None = None) -> int:
     assignments = subparsers.add_parser("assignments", help="Generate assignment and due-date tracking files")
     assignments.add_argument("course_root", type=Path)
 
+    learn = subparsers.add_parser("learn", help="Generate a student learning session")
+    learn.add_argument("course_root", type=Path)
+    learn.add_argument("--mode", choices=SUPPORTED_MODES, required=True)
+    learn.add_argument("--config", type=Path)
+    learn.add_argument("--no-docx", action="store_true")
+
     args = parser.parse_args(argv)
     try:
         if args.command == "scan":
@@ -78,6 +86,18 @@ def main(argv: list[str] | None = None) -> int:
                 ensure_ascii=False,
                 indent=2,
             ))
+        elif args.command == "learn":
+            if not args.course_root.exists() or not args.course_root.is_dir():
+                raise ValueError(f"course directory does not exist: {args.course_root}")
+            config = load_config(args.config)
+            build_index(args.course_root)
+            result = generate_learning_session(args.course_root, _extract_course(args.course_root), args.mode, config)
+            json_path = write_learning_session(args.course_root, result)
+            report_path = None
+            if config.get("generate_docx", True) and not args.no_docx:
+                from generate_report_docx import generate_report
+                report_path = generate_report(args.course_root, result)
+            print(json.dumps({"json": str(json_path), "docx": str(report_path) if report_path else None}, ensure_ascii=False, indent=2))
         return 0
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
