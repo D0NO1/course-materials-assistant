@@ -37,7 +37,7 @@ class CliTests(unittest.TestCase):
             (course / "lecture.txt").write_text("lecture", encoding="utf-8")
             exit_code = main(["learn", str(course), "--mode", "preview", "--no-docx"])
             self.assertEqual(exit_code, 0)
-            self.assertTrue((course / ".course-assistant" / "learning-session-preview.json").exists())
+            self.assertTrue((course / ".course-assistant" / "01-课前预习-Pre-Class-Preview.json").exists())
 
 
 if __name__ == "__main__":

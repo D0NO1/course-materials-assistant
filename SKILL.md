@@ -87,6 +87,8 @@ Keep course-level derived files in:
   exam-focus.md
   exam_focus.json
   reports\\
+
+Learning-session files use bilingual names: `01-课前预习-Pre-Class-Preview`, `02-课堂理解-Lecture-Understanding`, `03-课后复习-Post-Class-Review`, `04-作业任务-Assignment-Guide`, and `05-Final-Exam考点复习-Final-Exam-Review`.
 ```
 
 Create `glossary.md` or `assignment-tracker.md` only when the user requests terminology or assignment tracking, not on every scan.

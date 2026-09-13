@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
 
-from generate_learning_session import SUPPORTED_MODES, generate_learning_session, write_learning_session
+from generate_learning_session import SUPPORTED_MODES, generate_learning_session, learning_filename, write_learning_session
 
 
 MATERIALS = [
@@ -37,6 +37,10 @@ MATERIALS = [
 
 
 class LearningSessionTests(unittest.TestCase):
+    def test_learning_filenames_are_bilingual(self):
+        self.assertEqual(learning_filename("preview"), "01-课前预习-Pre-Class-Preview.json")
+        self.assertEqual(learning_filename("exam"), "05-Final-Exam考点复习-Final-Exam-Review.json")
+
     def test_all_modes_have_bilingual_sections_and_sources(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             course = Path(temp_dir) / "MIS-413"

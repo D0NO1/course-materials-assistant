@@ -18,7 +18,7 @@ from learning_config import order_bilingual
 def _safe_name(value: str) -> str:
     if isinstance(value, dict):
         value = value.get("en", "course-analysis")
-    value = re.sub(r"[^A-Za-z0-9 _-]+", "", value).strip()
+    value = re.sub(r"[<>:\"/\\|?*]+", "", value).strip()
     return re.sub(r"\s+", "-", value) or "course-analysis"
 
 
@@ -50,7 +50,8 @@ def generate_report(course_root: str | Path, report: dict) -> Path:
     output_dir = root / ".course-assistant" / "reports"
     output_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    output = output_dir / f"{stamp}-{_safe_name(report.get('title', 'analysis'))}.docx"
+    filename = report.get("output_filename") or _safe_name(report.get("title", "analysis"))
+    output = output_dir / f"{stamp}-{_safe_name(str(filename))}.docx"
 
     document = Document()
     language_mode = str(report.get("language_mode", "en-zh"))

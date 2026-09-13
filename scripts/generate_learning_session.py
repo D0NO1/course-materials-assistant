@@ -10,6 +10,20 @@ from pathlib import Path
 from learning_config import DEFAULT_CONFIG, order_bilingual
 
 SUPPORTED_MODES = ("preview", "understand", "review", "assignment", "exam")
+LEARNING_FILENAMES = {
+    "preview": "01-课前预习-Pre-Class-Preview",
+    "understand": "02-课堂理解-Lecture-Understanding",
+    "review": "03-课后复习-Post-Class-Review",
+    "assignment": "04-作业任务-Assignment-Guide",
+    "exam": "05-Final-Exam考点复习-Final-Exam-Review",
+}
+
+
+def learning_filename(mode: str, extension: str = ".json") -> str:
+    if mode not in LEARNING_FILENAMES:
+        raise ValueError(f"unsupported learning mode: {mode}")
+    suffix = extension if extension.startswith(".") else f".{extension}"
+    return LEARNING_FILENAMES[mode] + suffix
 
 
 def _text_items(material: dict) -> list[tuple[str, str]]:
@@ -101,6 +115,7 @@ def generate_learning_session(course_root: str | Path, extracted_materials: list
         "language_mode": settings.get("language_mode", "en-zh"),
         "audience": settings.get("audience", DEFAULT_CONFIG["audience"]),
         "title": {"en": f"{mode.title()} Learning Guide", "zh": "双语学习指南"},
+        "output_filename": LEARNING_FILENAMES[mode],
         "summary": {"en": "A source-backed learning guide generated from the indexed course materials.", "zh": "根据已索引课程材料生成的、有来源依据的学习指南。"},
         "sections": sections,
         "sources": sources,
@@ -115,6 +130,6 @@ def write_learning_session(course_root: str | Path, result: dict) -> Path:
     root = Path(course_root).resolve()
     metadata = root / ".course-assistant"
     metadata.mkdir(parents=True, exist_ok=True)
-    path = metadata / f"learning-session-{result['mode']}.json"
+    path = metadata / learning_filename(result["mode"])
     path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return path
