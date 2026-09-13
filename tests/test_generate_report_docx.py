@@ -71,6 +71,22 @@ class GenerateReportDocxTests(unittest.TestCase):
             output = generate_report(course, report)
 
             self.assertTrue(output.exists())
+
+    def test_generate_report_respects_chinese_first_language_mode(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            course = Path(temp_dir) / "course"
+            course.mkdir()
+            report = {
+                "title": {"en": "Preview", "zh": "预习"},
+                "course": "course",
+                "language_mode": "zh-en",
+                "summary": {"en": "English summary", "zh": "中文总结"},
+                "sections": [],
+            }
+            output = generate_report(course, report)
+            from docx import Document
+            text = "\n".join(paragraph.text for paragraph in Document(output).paragraphs)
+            self.assertLess(text.index("中文总结"), text.index("English summary"))
             self.assertEqual(output.suffix, ".docx")
             self.assertTrue(output.parent.name == "reports")
             self.assertGreater(output.stat().st_size, 0)

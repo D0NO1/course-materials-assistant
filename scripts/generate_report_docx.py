@@ -12,6 +12,8 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt
 
+from learning_config import order_bilingual
+
 
 def _safe_name(value: str) -> str:
     if isinstance(value, dict):
@@ -20,14 +22,17 @@ def _safe_name(value: str) -> str:
     return re.sub(r"\s+", "-", value) or "course-analysis"
 
 
-def _bilingual(value: object) -> tuple[str, str | None]:
+def _bilingual(value: object, mode: str = "en-zh") -> tuple[str, str | None]:
     if isinstance(value, dict):
-        return str(value.get("en", "")), str(value.get("zh")) if value.get("zh") else None
+        en = str(value.get("en", ""))
+        zh = str(value.get("zh", "")) if value.get("zh") else ""
+        ordered = order_bilingual(en, zh, mode)
+        return ordered[0], ordered[1] if len(ordered) > 1 else None
     return str(value), None
 
 
-def _add_bilingual_paragraph(document: Document, value: object, style: str | None = None):
-    en, zh = _bilingual(value)
+def _add_bilingual_paragraph(document: Document, value: object, mode: str = "en-zh", style: str | None = None):
+    en, zh = _bilingual(value, mode)
     paragraph = document.add_paragraph(style=style)
     paragraph.add_run(en)
     if zh:
@@ -43,6 +48,7 @@ def generate_report(course_root: str | Path, report: dict) -> Path:
     output = output_dir / f"{stamp}-{_safe_name(report.get('title', 'analysis'))}.docx"
 
     document = Document()
+    language_mode = str(report.get("language_mode", "en-zh"))
     section = document.sections[0]
     section.top_margin = Inches(0.7)
     section.bottom_margin = Inches(0.7)
@@ -55,7 +61,7 @@ def generate_report(course_root: str | Path, report: dict) -> Path:
 
     title = document.add_paragraph(style="Title")
     title.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    title_en, title_zh = _bilingual(report.get("title", "Course Analysis Report"))
+    title_en, title_zh = _bilingual(report.get("title", "Course Analysis Report"), language_mode)
     title.add_run(title_en)
     if title_zh:
         title.add_run("\n" + title_zh)
@@ -81,7 +87,7 @@ def generate_report(course_root: str | Path, report: dict) -> Path:
             status.add_run(str(value))
 
     document.add_heading("Core Summary / 核心总结", level=1)
-    _add_bilingual_paragraph(document, report.get("summary", ""))
+    _add_bilingual_paragraph(document, report.get("summary", ""), language_mode)
 
     for section_data in report.get("sections", []):
         heading = section_data.get("heading", "Section")
@@ -89,7 +95,7 @@ def generate_report(course_root: str | Path, report: dict) -> Path:
             heading = f"{heading} / {section_data['heading_zh']}"
         document.add_heading(str(heading), level=1)
         for item in section_data.get("items", []):
-            _add_bilingual_paragraph(document, item, style="List Bullet")
+            _add_bilingual_paragraph(document, item, language_mode, style="List Bullet")
 
     sources = report.get("sources", [])
     if sources:
