@@ -88,6 +88,22 @@ class GenerateReportDocxTests(unittest.TestCase):
             text = "\n".join(paragraph.text for paragraph in Document(output).paragraphs)
             self.assertLess(text.index("中文总结"), text.index("English summary"))
 
+    def test_report_places_english_and_chinese_on_separate_adjacent_paragraphs(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            course = Path(temp_dir) / "course"
+            course.mkdir()
+            report = {
+                "title": "Pair Test",
+                "course": "course",
+                "summary": {"en": "English summary", "zh": "中文总结"},
+                "sections": [{"heading": "Terms", "items": [{"en": "Scope", "zh": "项目范围"}]}],
+            }
+            output = generate_report(course, report)
+            from docx import Document
+            texts = [paragraph.text for paragraph in Document(output).paragraphs]
+            self.assertEqual(texts[3:5], ["English summary", "中文总结"])
+            self.assertEqual(texts[6:8], ["Scope", "项目范围"])
+
     def test_generate_report_removes_xml_invalid_control_characters(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             course = Path(temp_dir) / "course"

@@ -11,6 +11,7 @@ from pathlib import Path
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt
+from docx.oxml.ns import qn
 
 from learning_config import order_bilingual
 
@@ -39,9 +40,14 @@ def _bilingual(value: object, mode: str = "en-zh") -> tuple[str, str | None]:
 def _add_bilingual_paragraph(document: Document, value: object, mode: str = "en-zh", style: str | None = None):
     en, zh = _bilingual(value, mode)
     paragraph = document.add_paragraph(style=style)
-    paragraph.add_run(_xml_safe(en))
+    run = paragraph.add_run(_xml_safe(en))
+    run.font.name = "Aptos"
+    run._element.get_or_add_rPr().get_or_add_rFonts().set(qn("w:eastAsia"), "Microsoft YaHei")
     if zh:
-        paragraph.add_run("\n" + _xml_safe(zh))
+        chinese = document.add_paragraph(style=style)
+        chinese_run = chinese.add_run(_xml_safe(zh))
+        chinese_run.font.name = "Microsoft YaHei"
+        chinese_run._element.get_or_add_rPr().get_or_add_rFonts().set(qn("w:eastAsia"), "Microsoft YaHei")
     return paragraph
 
 
@@ -63,6 +69,7 @@ def generate_report(course_root: str | Path, report: dict) -> Path:
 
     normal = document.styles["Normal"]
     normal.font.name = "Aptos"
+    normal._element.rPr.rFonts.set(qn("w:eastAsia"), "Microsoft YaHei")
     normal.font.size = Pt(10.5)
 
     title = document.add_paragraph(style="Title")

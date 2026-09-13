@@ -50,6 +50,11 @@ def _item(en: str, zh: str, sources: list[str] | None = None, evidence: str | No
     return value
 
 
+def _display_text(text: str, limit: int = 240) -> str:
+    compact = re.sub(r"\s+", " ", str(text)).strip()
+    return compact if len(compact) <= limit else compact[: limit - 3].rstrip() + "..."
+
+
 def _collect(materials: list[dict]) -> tuple[list[tuple[str, str]], list[str], list[str]]:
     texts: list[tuple[str, str]] = []
     sources: list[str] = []
@@ -111,27 +116,27 @@ def _sections(course_name: str, mode: str, texts: list[tuple[str, str]], config:
     evidence = "course-confirmed emphasis" if objective_lines else "repeated across materials"
     core = _core_items(course_name)
     if mode == "preview":
-        items = [_item(text, translate_text(text), [locator], "course-confirmed emphasis") for text, locator in objective_lines[:5]]
+        items = [_item(_display_text(text), translate_text(text), [locator], "course-confirmed emphasis") for text, locator in objective_lines[:5]]
         items.append(_item("What should I know before class? Review the key terms and the first source pages or slides.", "课前应该知道什么？先复习关键词，并阅读最前面的相关页面或幻灯片。", sources[:5], "assistant-priority inference"))
         items.append(_item("What should I ask in class? Ask about any term or diagram that remains unclear.", "课堂上应该问什么？对于仍然不清楚的术语或图表，及时向老师提问。", [], "assistant-priority inference"))
         return ([{"heading": "Course Core", "heading_zh": "课程核心", "items": core}] if core else []) + [{"heading": "Pre-Class Preview", "heading_zh": "课前预习", "items": items}]
     if mode == "understand":
-        items = [_item(text, translate_text(text), [locator], evidence) for text, locator in key_lines[:8]]
+        items = [_item(_display_text(text), translate_text(text), [locator], evidence) for text, locator in key_lines[:8]]
         items.append(_item("The material should be understood through its concepts, relationships, and examples.", "理解材料时，应同时关注概念、概念之间的关系以及例子。", sources[:5], "assistant-priority inference"))
         return ([{"heading": "Course Core", "heading_zh": "课程核心", "items": core}] if core else []) + [{"heading": "Lecture Understanding", "heading_zh": "课堂理解", "items": items}]
     if mode == "review":
-        items = [_item(f"Key point: {text}", "核心要点：" + translate_text(text), [locator], evidence) for text, locator in key_lines[:8]]
+        items = [_item(f"Key point: {_display_text(text)}", "核心要点：" + translate_text(text), [locator], evidence) for text, locator in key_lines[:8]]
         items.append(_item("Self-test: Can you define the main terms and explain their relationships without looking at the notes?", "自测：不看笔记时，你能否定义主要术语并解释它们之间的关系？", sources[:5], "assistant-priority inference"))
         items.append(_item("Review next: revisit the items marked unclear and compare them with the source material.", "下一步复习：重新查看标记为不清楚的内容，并与原始课程材料进行对照。", [], "assistant-priority inference"))
         return ([{"heading": "Course Core", "heading_zh": "课程核心", "items": core}] if core else []) + [{"heading": "Post-Class Review", "heading_zh": "课后复习", "items": items}]
     if mode == "assignment":
-        items = [_item(f"Assignment evidence: {text}", "作业材料：" + translate_text(text), [locator], "course-confirmed emphasis") for text, locator in assignment_lines[:8]]
+        items = [_item(f"Assignment evidence: {_display_text(text)}", "作业材料：" + translate_text(text), [locator], "course-confirmed emphasis") for text, locator in assignment_lines[:8]]
         dates = sorted(set(date for text, _ in assignment_lines for date in _dates(text)))
         if dates:
             items.append(_item(f"Due dates found: {', '.join(dates)}", f"发现的截止日期：{', '.join(dates)}", sources[:5], "needs confirmation" if len(dates) > 1 else "course-confirmed emphasis"))
         items.append(_item("Submission checklist: confirm deliverables, required format, deadline, and rubric coverage before submitting.", "提交清单：提交前确认交付物、格式要求、截止日期以及评分标准覆盖情况。", [], "assistant-priority inference"))
         return ([{"heading": "Course Core", "heading_zh": "课程核心", "items": core}] if core else []) + [{"heading": "Assignment Requirement Guide", "heading_zh": "作业要求指南", "items": items}]
-    items = [_item(f"Priority topic: {text}", "优先掌握的考点：" + translate_text(text), [locator], evidence) for text, locator in key_lines[:8]]
+    items = [_item(f"Priority topic: {_display_text(text)}", "优先掌握的考点：" + translate_text(text), [locator], evidence) for text, locator in key_lines[:8]]
     items.append(_item("Generated question angles are study prompts; actual exam questions are not known.", "生成的问题角度只是复习提示；无法知道实际考试题目。", sources[:5], "needs confirmation"))
     items.append(_item("Last-week plan: review high-value definitions, comparisons, processes, and application examples, then complete the self-test.", "最后一周计划：复习高价值定义、比较、流程和应用例子，然后完成自测。", [], "assistant-priority inference"))
     return ([{"heading": "Course Core", "heading_zh": "课程核心", "items": core}] if core else []) + [{"heading": "Final Exam Focus", "heading_zh": "Final Exam 考点", "items": items}]

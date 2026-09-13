@@ -86,6 +86,15 @@ class LearningSessionTests(unittest.TestCase):
             self.assertIn("系统开发生命周期", serialized)
             self.assertIn("Course Core", serialized)
 
+    def test_display_english_lines_are_compact(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            course = Path(temp_dir) / "MIS-413-91 - Systems Analysis"
+            course.mkdir()
+            result = generate_learning_session(course, MATERIALS, "exam")
+            for section in result["sections"]:
+                for item in section["items"]:
+                    self.assertLessEqual(len(item["en"]), 260)
+
 
 if __name__ == "__main__":
     unittest.main()
