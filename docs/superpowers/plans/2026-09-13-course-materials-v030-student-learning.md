@@ -99,7 +99,7 @@
 - [ ] **Step 2: Run the skill validator if its dependencies are available; record a clear limitation if unavailable.**
 - [ ] **Step 3: Run CLI smoke tests on a temporary course fixture for all five modes and verify JSON/DOCX paths remain under `.course-assistant`.**
 - [ ] **Step 4: Run security scans for API keys, tokens, private keys, emails, course paths, course materials, `.course-assistant`, `work`, and bytecode in the public tree.**
-- [ ] **Step 5: Sync validated skill files to `C:\Users\mcdld\.codex\skills\course-materials-assistant` and verify required files.**
+- [ ] **Step 5: Sync validated skill files to `<Codex skill directory>\course-materials-assistant` and verify required files.**
 - [ ] **Step 6: Rebuild `course-materials-assistant-v0.3.0-upload.zip` without `.git`, `.course-assistant`, `work`, bytecode, or course materials.**
 - [ ] **Step 7: Verify ZIP listing, SHA-256, and final `git status`.**
 - [ ] **Step 8: Commit release metadata with `chore: prepare v0.3.0 upload package`.**

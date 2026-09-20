@@ -101,8 +101,65 @@ class GenerateReportDocxTests(unittest.TestCase):
             output = generate_report(course, report)
             from docx import Document
             texts = [paragraph.text for paragraph in Document(output).paragraphs]
-            self.assertEqual(texts[3:5], ["English summary", "中文总结"])
-            self.assertEqual(texts[6:8], ["Scope", "项目范围"])
+            summary_index = texts.index("English summary")
+            self.assertEqual(texts[summary_index:summary_index + 2], ["English summary", "中文总结"])
+            item_index = texts.index("Scope")
+            self.assertEqual(texts[item_index:item_index + 2], ["Scope", "项目范围"])
+
+    def test_report_does_not_use_manual_line_breaks_for_bilingual_blocks(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            course = Path(temp_dir) / "course"
+            course.mkdir()
+            report = {
+                "title": {"en": "Exam Learning Guide", "zh": "双语学习指南"},
+                "course": "course",
+                "generated": "2026-09-13",
+                "summary": {"en": "English summary", "zh": "中文总结"},
+            }
+            output = generate_report(course, report)
+            from docx import Document
+            document = Document(output)
+            self.assertEqual([p.text for p in document.paragraphs[:2]], ["Exam Learning Guide", "双语学习指南"])
+            self.assertTrue(all("\n" not in p.text for p in document.paragraphs))
+            with ZipFile(output) as archive:
+                document_xml = archive.read("word/document.xml").decode("utf-8")
+            self.assertNotIn("<w:br", document_xml)
+
+    def test_report_uses_strict_english_then_chinese_lines_for_structure(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            course = Path(temp_dir) / "course"
+            course.mkdir()
+            report = {
+                "title": {"en": "Exam Learning Guide", "zh": "双语学习指南"},
+                "course": "course",
+                "generated": "2026-09-13",
+                "summary": {"en": "English summary", "zh": "中文总结"},
+                "sections": [{
+                    "heading": "Key Terms",
+                    "heading_zh": "关键术语",
+                    "items": [{"en": "Scope", "zh": "项目范围"}],
+                }],
+            }
+
+            output = generate_report(course, report)
+
+            from docx import Document
+            texts = [paragraph.text for paragraph in Document(output).paragraphs]
+            self.assertEqual(texts[:2], ["Exam Learning Guide", "双语学习指南"])
+            self.assertEqual(texts[2:6], [
+                "Course: course",
+                "课程：course",
+                "Generated: 2026-09-13",
+                "生成日期：2026-09-13",
+            ])
+            self.assertEqual(texts[6:8], ["Core Summary", "核心总结"])
+            self.assertEqual(texts[8:10], ["English summary", "中文总结"])
+            self.assertEqual(texts[10:12], ["Key Terms", "关键术语"])
+            self.assertEqual(texts[12:14], ["Scope", "项目范围"])
+
+            with ZipFile(output) as archive:
+                document_xml = archive.read("word/document.xml").decode("utf-8")
+            self.assertIn('w:val="BilingualChinese"', document_xml)
 
     def test_generate_report_removes_xml_invalid_control_characters(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -116,7 +173,8 @@ class GenerateReportDocxTests(unittest.TestCase):
             }
             output = generate_report(course, report)
             from docx import Document
-            self.assertEqual(Document(output).paragraphs[3].text, "BeforeAfter")
+            texts = [paragraph.text for paragraph in Document(output).paragraphs]
+            self.assertIn("BeforeAfter", texts)
             self.assertEqual(output.suffix, ".docx")
             self.assertTrue(output.parent.name == "reports")
             self.assertGreater(output.stat().st_size, 0)
